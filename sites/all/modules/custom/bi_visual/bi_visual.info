@@ -1,0 +1,6 @@
+name = bi_visual
+description = Visualizes data like business intelligence tools
+core = 7.x
+
+dependencies[] = d3
+dependencies[] = taxonomy

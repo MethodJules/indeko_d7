@@ -1,0 +1,96 @@
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  taxonomy_pivot.module: n/a
+#  taxonomy_pivot.info: n/a
+#  taxonomy_pivot.install: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2013-03-07 09:35+0100\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: taxonomy_pivot.module:53
+msgid "Access Taxnonomy Pivot"
+msgstr ""
+
+#: taxonomy_pivot.module:54
+msgid "Use all functions of Taxonomy Pivot."
+msgstr ""
+
+#: taxonomy_pivot.module:100
+msgid "none"
+msgstr ""
+
+#: taxonomy_pivot.module:121
+msgid "Configuration"
+msgstr ""
+
+#: taxonomy_pivot.module:125
+msgid "X-Axis"
+msgstr ""
+
+#: taxonomy_pivot.module:132
+msgid "Y-Axis"
+msgstr ""
+
+#: taxonomy_pivot.module:140
+msgid "Filters"
+msgstr ""
+
+#: taxonomy_pivot.module:191
+msgid "All Filters"
+msgstr ""
+
+#: taxonomy_pivot.module:198
+msgid "Add"
+msgstr ""
+
+#: taxonomy_pivot.module:210
+msgid "Reset"
+msgstr ""
+
+#: taxonomy_pivot.module:222
+msgid "Process"
+msgstr ""
+
+#: taxonomy_pivot.module:234
+msgid "Excel"
+msgstr ""
+
+#: taxonomy_pivot.module:246;301
+msgid "Chart"
+msgstr ""
+
+#: taxonomy_pivot.module:273
+msgid "Taxonomy Pivot Table"
+msgstr ""
+
+#: taxonomy_pivot.module:493
+msgid "Contents for current selection"
+msgstr ""
+
+#: taxonomy_pivot.module:1077
+msgid "Bar Chart"
+msgstr ""
+
+#: taxonomy_pivot.module:15 taxonomy_pivot.info:0
+msgid "Taxonomy Pivot"
+msgstr ""
+
+#: (duplicate) taxonomy_pivot.install:12
+msgid "Taxonomy Pivot was installed successfully! For the full experience you should install the optional modules !phpexcel and !charts."
+msgstr ""
+
+#: taxonomy_pivot.info:0
+msgid "Pivot table for showing taxonomy classification of nodes"
+msgstr ""
+

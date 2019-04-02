@@ -1,0 +1,13 @@
+<?php
+/**
+ * @file
+ * Install file for taxonomy_pivot module
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function taxonomy_pivot_enable() {
+  $t = get_t();
+  drupal_set_message($t("Taxonomy Pivot was installed successfully! For the full experience you should install the optional modules !phpexcel and !charts.", array('!phpexcel' => '<a href="https://drupal.org/project/phpexcel">PHPExcel</a>', '!charts' => '<a href="https://drupal.org/project/chart">Google Chart API</a>')), 'warning');
+}

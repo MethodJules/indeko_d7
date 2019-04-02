@@ -1,0 +1,4 @@
+name = Taxonomy Pivot
+description = Pivot table for showing taxonomy classification of nodes
+dependencies[] = taxonomy
+core = 7.x

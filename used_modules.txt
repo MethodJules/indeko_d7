@@ -1,0 +1,156 @@
+ Package           Name                                                                     Version              
+ Access control    Nodeaccess (nodeaccess)                                                  7.x-1.4              
+ Administration    Actions permissions (VBO) (actions_permissions)                          7.x-3.3              
+ Administration    Administration menu (admin_menu)                                         7.x-3.0-rc5          
+ Administration    Administration menu Toolbar style (admin_menu_toolbar)                   7.x-3.0-rc5          
+ Atlas             Comments Shortener (comments_shortener)                                                       
+ Atlas             Dynamic node creation links (node_creation_links)                                             
+ Atlas             Publication Form (publication_form)                                                           
+ Atlas             Slider Tooltip (slider_tooltip)                                                               
+ Atlas             User Profile Elements Overview (user_profile_elements_overview)                               
+ Biblio            Biblio (biblio)                                                          7.x-1.0-rc7          
+ Biblio            Biblio - BibTex (biblio_bibtex)                                          7.x-1.0-rc7          
+ Biblio            Biblio - CiteProc (biblio_citeproc)                                      7.x-1.0-rc7          
+ Biblio            Biblio - Crossref (biblio_crossref)                                      7.x-1.0-rc7          
+ Biblio            Biblio - RIS (biblio_ris)                                                7.x-1.0-rc7          
+ Biblio            Biblio - RTF (biblio_rtf)                                                7.x-1.0-rc7          
+ Chaos tool suite  Chaos tools (ctools)                                                     7.x-1.12             
+ Chaos tool suite  Custom content panes (ctools_custom_content)                             7.x-1.12             
+ Chaos tool suite  Page manager (page_manager)                                              7.x-1.12             
+ Chaos tool suite  Term Depth access (term_depth)                                           7.x-1.12             
+ Chaos tool suite  Views content panes (views_content)                                      7.x-1.12             
+ Contact Forms     Contact Forms (contact_forms)                                            7.x-1.8              
+ Date/Time         Calendar (calendar)                                                      7.x-3.5              
+ Date/Time         Date (date)                                                              7.x-2.9              
+ Date/Time         Date All Day (date_all_day)                                              7.x-2.9              
+ Date/Time         Date API (date_api)                                                      7.x-2.9              
+ Date/Time         Date iCal (date_ical)                                                    7.x-3.9              
+ Date/Time         Date Popup (date_popup)                                                  7.x-2.9              
+ Date/Time         Date Repeat API (date_repeat)                                            7.x-2.9              
+ Date/Time         Date Repeat Field (date_repeat_field)                                    7.x-2.9              
+ Date/Time         Date Tools (date_tools)                                                  7.x-2.9              
+ Date/Time         Date Views (date_views)                                                  7.x-2.9              
+ Development       Devel (devel)                                                            7.x-1.5              
+ Display Suite     Display Suite (ds)                                                       7.x-2.14             
+ Display Suite     Display Suite Extras (ds_extras)                                         7.x-2.14             
+ Display Suite     Display Suite Format (ds_format)                                         7.x-2.14             
+ Display Suite     Display Suite Forms (ds_forms)                                           7.x-2.14             
+ Display Suite     Display Suite Search (ds_search)                                         7.x-2.14             
+ Display Suite     Display Suite UI (ds_ui)                                                 7.x-2.14             
+ Drupal            Hook Post Action (hook_post_action)                                      7.x-1.0-beta2        
+ Entity Connect    Entity Connect (entityconnect)                                           7.x-2.0-rc1          
+ Entity Connect    Entity Connect and Term Reference field. (entityconnect_term_reference)  7.x-2.0-rc1          
+ Feeds             Feeds (feeds)                                                            7.x-2.0-beta3        
+ Feeds             Feeds Admin UI (feeds_ui)                                                7.x-2.0-beta3        
+ Fields            Address Field (addressfield)                                             7.x-1.2              
+ Fields            Conditional Fields (conditional_fields)                                  7.x-3.0-alpha2       
+ Fields            Entity Reference (entityreference)                                       7.x-1.2              
+ Fields            Field Group (field_group)                                                7.x-1.5              
+ Fields            Field Validation (field_validation)                                      7.x-2.6              
+ Fields            Field validation extras (field_validation_extras)                        7.x-2.6              
+ Fields            Field Validation UI (field_validation_ui)                                7.x-2.6              
+ Fields            Geofield (geofield)                                                      7.x-2.3              
+ Fields            Link (link)                                                              7.x-1.4              
+ Fields            Multiupload Filefield Widget (multiupload_filefield_widget)              7.x-1.13             
+ Fields            Multiupload Imagefield Widget (multiupload_imagefield_widget)            7.x-1.3              
+ FlexSlider        FlexSlider (flexslider)                                                  7.x-2.0-rc1          
+ FlexSlider        FlexSlider Fields (flexslider_fields)                                    7.x-2.0-rc1          
+ FlexSlider        FlexSlider Views Style (flexslider_views)                                7.x-2.0-rc1          
+ Input filters     Relative to Absolute Filter (rel_to_abs)                                 7.x-1.6              
+ Knowledge Map     form_wissenskarte_module (form_wissenskarte_module)                                           
+ Knowledge Map     Image Map Resizer (imagemap_resizer)                                                          
+ Knowledge Map     jQuery Maphilight (ATLAS VERSION) (jq_maphilight)                                             
+ Mail              Mail System (mailsystem)                                                 7.x-2.34             
+ Mail              Mime Mail (mimemail)                                                     7.x-1.0-beta4        
+ Mail              Mime Mail Action (mimemail_action)                                       7.x-1.0-beta4        
+ Mail              Mime Mail CSS Compressor (mimemail_compress)                             7.x-1.0-beta4        
+ Mail              SMTP Authentication Support (smtp)                                       7.x-1.6              
+ Media             File Entity (file_entity)                                                7.x-2.0-beta3        
+ Media             IMCE (imce)                                                              7.x-1.10             
+ Media             Media (media)                                                            7.x-2.0-rc3          
+ Media             Media WYSIWYG (media_wysiwyg)                                            7.x-2.0-rc3          
+ MegaDrupal        MD Slider (md_slider)                                                    7.x-2.18             
+ Multilingual      Localization update (l10n_update)                                        7.x-2.1              
+ Node export       Node export (node_export)                                                7.x-3.1              
+ Organic groups    Organic groups (og)                                                      7.x-2.9              
+ Organic groups    Organic groups access control (og_access)                                7.x-2.9              
+ Organic groups    Organic groups context (og_context)                                      7.x-2.9              
+ Organic groups    Organic groups field access (og_field_access)                            7.x-2.9              
+ Organic groups    Organic groups register (og_register)                                    7.x-2.9              
+ Organic groups    Organic groups subgroups (og_subgroups)                                  7.x-2.0              
+ Organic groups    Organic groups UI (og_ui)                                                7.x-2.9              
+ Other             bi_visual (bi_visual)                                                                         
+ Other             Disable messages (disable_messages)                                      7.x-1.1              
+ Other             email_verteiler (email_verteiler)                                                             
+ Other             Entity API (entity)                                                      7.x-1.8              
+ Other             Entity tokens (entity_token)                                             7.x-1.8              
+ Other             FAQ Field (faqfield)                                                     7.x-1.4              
+ Other             Field Object (field_object)                                              7.x-3.0-alpha7       
+ Other             Font Awesome (fontawesome)                                               7.x-2.6              
+ Other             form_meetup (form_meetup)                                                                     
+ Other             Geocoder (geocoder)                                                      7.x-1.3              
+ Other             geoPHP (geophp)                                                          7.x-1.7              
+ Other             Image Download Formatter (image_download_formatter)                      7.x-1.0              
+ Other             Image Swap Block (imageswapblock)                                                             
+ Other             InDeKo Map filter extensions (map_filters)                                                    
+ Other             InDeKoNews (indekonews)                                                                       
+ Other             indekonews_conversion (indekonews_conversion)                                                 
+ Other             interestedGroups (interestedGroups)                                                           
+ Other             IP Geolocation Views & Maps (ip_geoloc)                                  7.x-1.30             
+ Other             Job Scheduler (job_scheduler)                                            7.x-2.0-alpha3       
+ Other             Leaflet (leaflet)                                                        7.x-1.3              
+ Other             Leaflet Markercluster (leaflet_markercluster)                            7.x-1.2              
+ Other             Leaflet views (leaflet_views)                                            7.x-1.3              
+ Other             Libraries (libraries)                                                    7.x-2.3              
+ Other             Menu Firstchild (menu_firstchild)                                        7.x-1.1              
+ Other             news trigger (news_trigger)                                                                   
+ Other             Node clone (clone)                                                       7.x-1.0              
+ Other             node_creation (node_creation)                                                                 
+ Other             Pathauto (pathauto)                                                      7.x-1.3              
+ Other             Redirect 403 to User Login (r4032login)                                  7.x-1.8              
+ Other             redirection after login (redirection_after_login)                                             
+ Other             Special menu items (special_menu_items)                                  7.x-2.0              
+ Other             Token (token)                                                            7.x-1.6              
+ Pdf               TCPDF (tcpdf)                                                            7.x-1.0-beta1        
+ Registration      Registration (registration)                                              7.x-1.6              
+ Registration      Registration Entity Access (registration_entity_access)                  7.x-1.6              
+ Registration      Registration Views (registration_views)                                  7.x-1.6              
+ Registration      Registration Wait list (registration_waitlist)                           7.x-1.6              
+ Rules             Rules (rules)                                                            7.x-2.9              
+ Rules             Rules Scheduler (rules_scheduler)                                        7.x-2.9              
+ Rules             Rules UI (rules_admin)                                                   7.x-2.9              
+ Search            Atlas Apache Solr Sort Block (morphsearch_sort)                                               
+ Search            Atlas search result CSV export (morphsearch_csv_export)                                       
+ Search            Morphsearch (morphsearch)                                                                     
+ Search            Related Search (morphsearch_related_search)                                                   
+ Search            Search Result Block (morphsearch_searchresults)                                               
+ Search Toolkit    Apache Solr framework (apachesolr)                                       7.x-1.8              
+ Search Toolkit    Apache Solr Real Time (apachesolr_realtime)                              7.x-1.2              
+ Search Toolkit    Apache Solr search (apachesolr_search)                                   7.x-1.8              
+ Search Toolkit    Apache Solr Views integration (apachesolr_views)                         7.x-1.1-beta1        
+ Services          Services (services)                                                      7.x-3.18             
+ Spam control      CAPTCHA (captcha)                                                        7.x-1.3              
+ Spam control      Image CAPTCHA (image_captcha)                                            7.x-1.3              
+ Statistics        Piwik Web Analytics (piwik)                                              7.x-2.9              
+ User interface    Chosen (chosen)                                                          7.x-2.0              
+ User interface    IMCE Wysiwyg API bridge (imce_wysiwyg)                                   7.x-1.0              
+ User interface    jQuery Autosize (jquery_autosize)                                        7.x-1.x-dev          
+ User interface    jQuery Update (jquery_update)                                            7.x-3.0-alpha3       
+ User interface    Responsive Menus (responsive_menus)                                      7.x-1.5              
+ User interface    Wysiwyg (wysiwyg)                                                        7.x-2.3              
+ UUID              Universally Unique ID (uuid)                                             7.x-1.0              
+ Views             Views (views)                                                            7.x-3.14             
+ Views             Views Bulk Operations (views_bulk_operations)                            7.x-3.3              
+ Views             Views UI (views_ui)                                                      7.x-3.14             
+ Visualization     D3 (d3)                                                                  7.x-1.0-alpha2+3-dev 
+ Visualization     D3 Examples (d3_examples)                                                7.x-1.0-alpha2+3-dev 
+ Visualization     D3 Kompetenz Words (d3_kompetenz_words)                                  7.x-1.0-alpha2+3-dev 
+ Voting            Fivestar (fivestar)                                                      7.x-2.2              
+ Voting            Half Star (halfstar)                                                     7.x-1.1              
+ Voting            Voting API (votingapi)                                                   7.x-2.12             
+ Webform           Permissions per Webform (permissions_per_webform)                        7.x-1.0-alpha1       
+ Webform           Webform (webform)                                                        7.x-4.14             
+ Webform           Webform Hints (webform_hints)                                            7.x-1.5              
+ Webform           Webform Rules (webform_rules)                                            7.x-1.6              
+ Workbench         Workbench (workbench)                                                    7.x-1.2              
+

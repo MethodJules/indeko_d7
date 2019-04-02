@@ -1,0 +1,185 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: mende
+ * Date: 3/1/2018
+ * Time: 12:20 PM
+ */
+
+/**
+ * @file
+ * InDeKo.Navi Wizard module file.
+ * Adds content type 'hypothesis' and wizard functionality.
+ * Wizard realized in combination with knowledge map module (form_wissenskarte_module).
+ *
+ */
+
+
+/**
+ * Implements hook_node_info().
+ * Define a new content type 'hypothesis'.
+ */
+function wizard_node_info() {
+  $contentType = array(
+    'hypothesis' => array(
+      'type'        => 'hypothesis',
+      'name'        => t('Hypothese'),
+      'base'        => 'node_content',
+      'description' => t('Hypothese für Wizard'),
+      'has_title'   => TRUE,
+      'title_label' => t('Titel'),
+      'custom'      => TRUE,
+    ),
+  );
+
+  return $contentType;
+}
+
+/**
+ * Implements hook_menu().
+ **/
+function wizard_menu() {
+  // AJAX request for publication reference tooltip.
+  $items['get/publication/ajax/%'] = array(
+    'type'            => MENU_CALLBACK,
+    'page callback'   => 'wizard_get_publication_preview_callback',
+    'page arguments' => array(3),
+    'access callback' => TRUE,
+  );
+
+  return $items;
+}
+
+/**
+ * Creates a preview of a node (for being displayed in a tooltip).
+ * Returns HTML of the preview.
+ *
+ * @param $nid
+ *   The node ID
+ */
+function wizard_get_publication_preview_callback($nid) {
+  // check for valid input (positive integer)
+  if(is_numeric($nid) && $nid > 0 && $nid == round($nid)) {
+    $publication = node_load($nid);
+
+    if (isset($publication)) {
+      $view = node_view($publication);
+
+      drupal_json_output($view['body']['#markup']);
+    }
+  }
+}
+
+/**
+ * Implements hook_theme().
+ * Tell Drupal to use the module's template file to display hypothesis nodes.
+ */
+function wizard_theme($existing, $type, $theme, $path) {
+  $theme = array();
+  $theme['node__hypothesis'] = array(
+    'render element' => 'content',
+    'base hook' => 'node',
+    'template' => 'node--hypothesis',
+    'path' => drupal_get_path('module', 'wizard') . '/templates',
+  );
+
+  return $theme;
+}
+
+
+/**
+ * Implements hook_preprocess_HOOK().
+ * Preprocess hypothesis theme variables.
+ */
+function wizard_preprocess_node(&$variables) {
+  if ($variables['node']->type === 'hypothesis') {
+
+    // get the relevant hypothesis fields
+    $hypGroup = array();
+    foreach ($variables['content'] as $key => $field) {
+      $keyArray = explode('_', $key);
+      if ($keyArray[0] === 'field' && $keyArray[1] === 'hyp') {
+        $hypGroup[$keyArray[2]][$keyArray[3]] = $field;
+
+        // content will be printed separately in node--hypothesis.tpl.php
+        // do not render the separate fields, they are build and rendered as fieldsets later
+        hide($variables['content'][$key]);
+      } else if ($key === 'field_references') {
+
+        // add the referenced biblio/publication node ID to the href link (used for mouse-over preview popup)
+        foreach ($field['#items'] as $refKey => $reference) {
+          $link = $field[$refKey]['#markup'];
+          $nid = $reference['target_id'];
+
+          /*
+          // theme publication reference link in citation style (IEEE, APA, MLE, ...)
+          $node = node_load($nid);
+          $style = 'ieee.csl';
+          $base  = variable_get('biblio_base', 'biblio');
+          $link = theme('biblio_style', array('node' => $node, 'base' => $base, 'style_name' => $style));
+
+          // depending on citation style adjust $linkWithNid otherwise all links (title, authors, ...) will get tooltip
+          */
+          $linkWithNid = str_replace('<a', '<a class="referencelink" id=' . $nid, $link);
+          $variables['content'][$key][$refKey]['#markup'] = $linkWithNid;
+        }
+      }
+    }
+
+    // build fieldset for each group (title, description, links)
+    foreach ($hypGroup as $group) {
+      $nodeIds = array();
+      $nodeTooltips = array();
+      foreach ($group['links']['#items'] as $link) {
+        $nodeIds[] = $link['target_id'];
+        $nodeTooltips[] = array('title' => $link['entity']->title,
+                                'type' => $link['entity']->type);
+      }
+
+      // build Solr query to return the given nodes
+      $searchData = 'entity_id:(' . implode(' OR ', $nodeIds) . ')';
+
+      $fieldset = array(
+        'element' => array(
+          '#type' => 'fieldset',
+          '#title' => $group['title']['#items'][0]['value'],
+          '#value' => $group['description']['#items'][0]['value'],
+          '#children' => '<div>',
+          '#attributes' => array(
+            'class' => array('hypothesis'),
+            'data-search' => array($searchData),
+          ),
+        )
+      );
+
+      // add fieldset tooltip (link titles with content type icon)
+      $fieldset['element']['#value'] .= '<div class="tooltip">';
+      foreach ($nodeTooltips as $tooltip) {
+        $fieldset['element']['#value'] .= '<div class="icon ' . $tooltip['type'] . '">' . check_plain($tooltip['title']) .'</div>';
+      }
+      $fieldset['element']['#value'] .=  '</div>';
+
+      // content will be printed separately in node--hypothesis.tpl.php
+      $variables['content']['fieldsets'][] = $fieldset;
+      hide($variables['content']['fieldsets']);
+      hide($variables['content']['field_similar']);
+      hide($variables['content']['field_references']);
+    }
+
+    // attach JavaScript file
+    $variables['content']['#attached']['js'][] = array(
+      'data' => drupal_get_path('module', 'wizard') . '/js/wizard.js',
+      'type' => 'file',
+      'scope' => 'footer',
+      'group' => JS_THEME,
+    );
+
+    // attach CSS file
+    $variables['content']['#attached']['css'][] = array(
+      'data' => drupal_get_path('module', 'wizard') . '/css/wizard.css',
+      'type' => 'file',
+      'scope' => 'footer',
+      'group' => CSS_THEME,
+    );
+  }
+}

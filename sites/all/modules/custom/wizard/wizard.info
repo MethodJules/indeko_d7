@@ -1,0 +1,7 @@
+name = Wizard
+description = InDeKo.Navi Wizard
+core = 7.x
+
+dependencies[] = morphsearch
+dependencies[] = morphsearch_searchresults
+dependencies[] = form_wissenskarte_module

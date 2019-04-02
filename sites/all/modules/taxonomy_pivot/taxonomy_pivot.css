@@ -1,0 +1,14 @@
+td.pivotValueCell {
+  border-width: 1px;
+  cursor: pointer;
+}
+
+td.pivotValueCellFull {
+  background-image: url("images/viewmag.png");
+  background-position: right center;
+  background-repeat: no-repeat;
+}
+
+div#nodes_area fieldset div.fieldset-wrapper ul li {
+  margin-top: 5px;
+}

@@ -1,0 +1,1188 @@
+<?php
+/**
+ * @file
+ * Module file containing the hooks and main methods of taxonomy_pivot module.
+ */
+
+
+/**
+ * Implements hook_menu().
+ *
+ * Registeres URLs for the main page and the callback for loading nodes.
+ */
+function taxonomy_pivot_menu() {
+  $items['taxonomy-pivot'] = array(
+    'title' => 'Taxonomy Pivot',
+    'page callback' => '_taxonomy_pivot_testpage',
+    'access arguments' => array('taxonomy pivot access'),
+  );
+
+  $items['taxonomy-pivot/load-nodes'] = array(
+    'page callback' => 'taxonomy_pivot_load_nodes',
+    'access arguments' => array('taxonomy pivot access'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_help().
+ */
+function taxonomy_pivot_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#taxonomy_pivot':
+      // Return a line-break version of the module README.txt.
+      return _filter_autop(file_get_contents(dirname(__FILE__) . "/README.txt"));
+  }
+}
+
+/**
+ * Implements hook_permission().
+ */
+function taxonomy_pivot_permission() {
+  return array(
+    'taxonomy pivot access' => array(
+      'title' => t('Access Taxnonomy Pivot'),
+      'description' => t('Use all functions of Taxonomy Pivot.'),
+    ),
+  );
+}
+
+/**
+ * Method for building the main page.
+ *
+ * JS and CSS are added and the configuration form is returned.
+ */
+function _taxonomy_pivot_testpage() {
+  drupal_add_js(drupal_get_path('module', "taxonomy_pivot") . "/taxonomy_pivot.js");
+  drupal_add_css(drupal_get_path('module', "taxonomy_pivot") . "/taxonomy_pivot.css", array('group' => CSS_THEME, 'weight' => 115));
+
+  // Return form.
+  return drupal_get_form('taxonomy_pivot_user_form');
+}
+
+/**
+ * The main configuration form.
+ *
+ * Shows page with all options.
+ *
+ * @param array $form
+ *   Form
+ *
+ * @param array $form_state
+ *   State of Form
+ */
+function taxonomy_pivot_user_form($form, &$form_state) {
+  // Get list of vocabularies (with assigned contenttypes).
+  $query = db_select('field_config', 'fc')
+    ->fields('fc', array('id', 'data'))
+    ->fields('nt', array('name'))
+    ->condition('type', 'taxonomy_term_reference');
+
+  $query_nt = db_select('node_type', 'nt')
+    ->fields('nt', array('name'));
+  $query_nt->addField('nt', 'type', 'nt_type');
+
+  $query->join('field_config_instance', 'fci', 'fci.field_id = fc.id');
+  $query->join($query_nt, 'nt', 'nt.nt_type = fci.bundle');
+
+  $query = $query->execute();
+
+  // Build array with name of voc and contenttype.
+  $vocs = array(0 => '- ' . t('none') . ' -');
+  foreach ($query as $result) {
+    $data = unserialize($result->data);
+
+    // Get name of voc from machine_name.
+    $query_voc = db_select('taxonomy_vocabulary', 'tv')
+      ->fields('tv', array('vid', 'name'))
+      ->condition('machine_name', $data["settings"]["allowed_values"][0]["vocabulary"])
+      ->execute();
+
+    foreach ($query_voc as $res_voc) {
+      $voc_name = $res_voc->name;
+      $voc_id = $res_voc->vid;
+      $vocs[$voc_id] = t($result->name) . ": " . t($voc_name);
+    }
+  }
+  asort($vocs);
+
+  // Fieldset for configuration.
+  $form['config'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Configuration'),
+  );
+  $form['config']['x-axis'] = array(
+    '#type' => 'select',
+    '#title' => t('X-Axis'),
+    '#options' => $vocs,
+    '#multiple' => TRUE,
+  );
+
+  $form['config']['y-axis'] = array(
+    '#type' => 'select',
+    '#title' => t('Y-Axis'),
+    '#options' => $vocs,
+    '#multiple' => TRUE,
+  );
+
+  // Area for filter configuration.
+  $form['config']['filters'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Filters'),
+    '#prefix' => '<div id="filter_area">',
+    '#suffix' => '</div>',
+    '#tree' => TRUE,
+  );
+
+  // #####################.
+  // Build list of filters.
+  // #####################.
+  if (isset($form_state['values']['filters']['filter-fields-hidden'])) {
+    $filter_count = count($form_state['values']['filters']['filter-fields-hidden']);
+  }
+  else {
+    $filter_count = 0;
+  }
+
+  // Rebuild all existing filters.
+  for ($i = 0; $i < $filter_count; $i++) {
+    $form['config']['filters']['filter-fields'][$i] = array(
+      '#type' => 'checkboxes',
+      '#options' => _taxonomy_pivot_voc_get_terms($form_state['values']['filters']['filter-fields-hidden'][$i]),
+      '#title' => $vocs[$form_state['values']['filters']['filter-fields-hidden'][$i]],
+    );
+
+    // In the hidden field the id of the vocabulary is stored.
+    $form['config']['filters']['filter-fields-hidden'][$i] = array(
+      '#type' => 'hidden',
+      '#value' => $form_state['values']['filters']['filter-fields-hidden'][$i],
+    );
+  }
+
+  // Add new filter.
+  if (isset($form_state["triggering_element"]) && $form_state["triggering_element"]["#name"] == "filter-add") {
+    $new_filter = $form_state["values"]["filters"]["filter-select"];
+
+    $form['config']['filters']['filter-fields'][$filter_count] = array(
+      '#type' => 'checkboxes',
+      '#options' => _taxonomy_pivot_voc_get_terms($new_filter),
+      '#title' => $vocs[$new_filter],
+    );
+
+    $form['config']['filters']['filter-fields-hidden'][$filter_count] = array(
+      '#type' => 'hidden',
+      '#value' => $new_filter,
+    );
+  }
+  // #####################.
+  // End.
+  // #####################.
+  $form['config']['filters']['filter-select'] = array(
+    '#type' => 'select',
+    '#title' => t('All Filters'),
+    '#options' => $vocs,
+  );
+
+  $form['config']['filters']['filter-add'] = array(
+    '#type' => 'button',
+    '#name' => 'filter-add',
+    '#value' => t('Add'),
+    '#ajax' => array(
+      'callback' => 'taxonomy_pivot_add_filter_callback',
+      'wrapper' => 'filter_area',
+    ),
+    '#submit' => array('taxonomy_pivot_add_filter_submit'),
+    '#executes_submit_callback' => TRUE,
+  );
+
+  $form['config']['filters']['filter-reset'] = array(
+    '#type' => 'button',
+    '#name' => 'filter-reset',
+    '#value' => t('Reset'),
+    '#ajax' => array(
+      'callback' => 'taxonomy_pivot_reset_filter_callback',
+      'wrapper' => 'filter_area',
+    ),
+    '#submit' => array('taxonomy_pivot_reset_filter_submit'),
+    '#executes_submit_callback' => TRUE,
+  );
+
+  $form['process-button'] = array(
+    '#type' => 'button',
+    '#name' => 'process-button',
+    '#value' => t('Process'),
+    '#ajax' => array(
+      'callback' => 'taxonomy_pivot_table_callback',
+      'wrapper' => 'table_area',
+    ),
+    '#submit' => array('taxonomy_pivot_table_submit'),
+  );
+
+  // This functionality needs the phpexcel module.
+  if (module_exists('phpexcel')) {
+    $form['excel-button'] = array(
+      '#type' => 'button',
+      '#value' => t('Excel'),
+      '#name' => 'excel-button',
+      '#submit' => array('taxonomy_pivot_excel_submit'),
+      '#executes_submit_callback' => TRUE,
+    );
+  }
+
+  // This functionality needs the chart module.
+  if (module_exists('chart')) {
+    $form['chart-button'] = array(
+      '#type' => 'button',
+      '#name' => 'chart-button',
+      '#value' => t('Chart'),
+      '#ajax' => array(
+        'callback' => 'taxonomy_pivot_chart_callback',
+        'wrapper' => 'chart_area',
+      ),
+      '#submit' => array('taxonomy_pivot_chart_submit'),
+    );
+  }
+
+  if ((isset($form_state['clicked_button']['#name']) &&
+      $form_state['clicked_button']['#name'] == 'process-button')
+    || (isset($form_state['input']['_triggering_element_name'])
+      && $form_state['input']['_triggering_element_name'] == 'process-button')
+  ) {
+    // Process the inputs and show table.
+    // First the axis are combined.
+    _taxonomy_pivot_build_axis($form, $form_state);
+
+    // Retrieve values from form_state.
+    $x_axis = $form_state['my-data']['x_axis'];
+    $y_axis = $form_state['my-data']['y_axis'];
+    $term_names = $form_state['my-data']['term_names'];
+    $filters = $form_state['my-data']['filters'];
+
+    // Area for pivot table.
+    $form['pivot_table'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Taxonomy Pivot Table'),
+      '#prefix' => '<div id="table_area">',
+      '#suffix' => '</div>',
+      '#tree' => TRUE,
+    );
+    $form['pivot_table']['output'] = array(
+      '#markup' =>
+      _taxonomy_pivot_table_generate($x_axis, $y_axis, $term_names, $filters),
+    );
+  }
+  else {
+    // Insert placeholder for the pivot table.
+    $form['pivot_table'] = array(
+      '#markup' => '<div id="table_area"></div>',
+    );
+  }
+
+  // This functionality needs the chart module.
+  if (module_exists('chart')) {
+    if ((isset($form_state['clicked_button']['#name']) &&
+        $form_state['clicked_button']['#name'] == 'chart-button')
+      || (isset($form_state['input']['_triggering_element_name'])
+        && $form_state['input']['_triggering_element_name'] == 'chart-button')
+    ) {
+
+      // Area for chart.
+      $form['output-chart'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Chart'),
+        '#prefix' => '<div id="chart_area">',
+        '#suffix' => '</div>',
+        '#tree' => TRUE,
+      );
+      $form['output-chart']['output'] = array(
+        '#markup' => _taxonomy_pivot_chart_build($form, $form_state),
+      );
+    }
+    else {
+      // Placeholder for the charts.
+      $form['output-chart'] = array(
+        '#markup' => '<div id="chart_area"></div>',
+      );
+    }
+  }
+
+  // Placeholder for the list of nodes.
+  $form['output-nodes'] = array(
+    '#markup' => '<div id="nodes_area"></div>',
+  );
+
+  return $form;
+}
+
+/**
+ * Function called for creating the Excel output.
+ *
+ * @param array $form
+ *   Form
+ *
+ * @param array $form_state
+ *   State of Form
+ */
+function taxonomy_pivot_excel_submit($form, &$form_state) {
+  // Build the axis (combine each voc with each other).
+  _taxonomy_pivot_build_axis($form, $form_state);
+
+  // Retrieve values from form_state.
+  $x_axis = $form_state['my-data']['x_axis'];
+  $y_axis = $form_state['my-data']['y_axis'];
+  $term_names = $form_state['my-data']['term_names'];
+  $filters = $form_state['my-data']['filters'];
+
+  // Build excel file.
+  return _taxonomy_pivot_build_excel($x_axis, $y_axis, $term_names, $filters);
+}
+
+/**
+ * Submit function called for retrieving the pivot table.
+ *
+ * Logic is done in taxonomy_pivot_table_callback.
+ *
+ * @param array $form
+ *   Form
+ *
+ * @param array $form_state
+ *   State of Form
+ */
+function taxonomy_pivot_table_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
+  // Next step taxonomy_pivot_user_form.
+}
+
+/**
+ * Ajax callback for process button of form.
+ *
+ * Returns the pivot table.
+ *
+ * @param array $form
+ *   Form
+ *
+ * @param array $form_state
+ *   State of Form
+ */
+function taxonomy_pivot_table_callback($form, &$form_state) {
+  // Part of the form containing the pivot table is returned.
+  return $form["pivot_table"];
+}
+
+/**
+ * Ajax callback for adding filters.
+ *
+ * @param array $form
+ *   Form
+ *
+ * @param array $form_state
+ *   State of Form
+ */
+function taxonomy_pivot_add_filter_callback($form, &$form_state) {
+  // Part of the form containing the filters is returned.
+  return $form["config"]["filters"];
+}
+
+/**
+ * Submit function for adding a filter.
+ *
+ * @param array $form
+ *   Form
+ *
+ * @param array $form_state
+ *   State of Form
+ */
+function taxonomy_pivot_add_filter_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
+  // Next step taxonomy_pivot_user_form.
+}
+
+/**
+ * Ajax callback for resetting the filters.
+ *
+ * @param array $form
+ *   Form
+ * @param array $form_state
+ *   State of Form
+ */
+function taxonomy_pivot_reset_filter_callback($form, &$form_state) {
+  // Part of the form containing the filters is returned.
+  return $form["config"]["filters"];
+}
+
+/**
+ * Submit function for resetting the filters.
+ *
+ * @param array $form
+ *   Form
+ *
+ * @param array $form_state
+ *   State of Form
+ */
+function taxonomy_pivot_reset_filter_submit($form, &$form_state) {
+  // Clear store for current filters.
+  $form_state['values']['filters']['filter-fields-hidden'] = array();
+
+  $form_state['rebuild'] = TRUE;
+  // Next step taxonomy_pivot_user_form.
+}
+
+/**
+ * Submit function called for retrieving the pivot table.
+ *
+ * Logic is done in taxonomy_pivot_table_callback.
+ *
+ * @param array $form
+ *   Form
+ *
+ * @param array $form_state
+ *   State of Form
+ */
+function taxonomy_pivot_chart_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
+  // Next step taxonomy_pivot_user_form.
+}
+
+/**
+ * Ajax callback for resetting the build the chart.
+ *
+ * @param array $form
+ *   Form
+ * @param array $form_state
+ *   State of Form
+ */
+function taxonomy_pivot_chart_callback($form, &$form_state) {
+  // Part of the form containing the filters is returned.
+  return $form["output-chart"];
+}
+
+/**
+ * Function called on url('taxonomy-pivot/load-nodes').
+ *
+ * Returns a list of nodes 'behind' the cells value.
+ */
+function taxonomy_pivot_load_nodes() {
+  // Retrieve the cell's parameters from the post data.
+  // (current value on x- & y-axis and the applied filters).
+  $x_tids = json_decode($_POST['x_axis']);
+  $y_tids = json_decode($_POST['y_axis']);
+  $filters = json_decode($_POST['filters']);
+
+  // Remove placeholder tid = 0
+  $x_tids = _taxonomy_pivot_remove_tid_placeholder($x_tids);
+  $y_tids = _taxonomy_pivot_remove_tid_placeholder($y_tids);
+
+  // Retrieve all child terms for x-terms and y-terms.
+  $x_tids_all = _taxonomy_pivot_get_childterms($x_tids);
+  $y_tids_all = _taxonomy_pivot_get_childterms($y_tids);
+
+  // Retrieve nids for the cell of table.
+  $result = _taxonomy_pivot_build_query_join($x_tids_all, $y_tids_all, $filters, FALSE);
+
+  echo '<fieldset><legend><span class="fieldset-legend">' . t('Contents for current selection') . '</span></legend>';
+  echo "<div class='fieldset-wrapper'><ul>";
+
+  // Add each node to the list (with a link).
+  foreach ($result as $row) {
+    $node = node_load($row->nid);
+    echo "<li><a href='" . url('node/' . $row->nid) . "'>" . check_plain($node->title) . "</a></li>";
+  }
+  echo "</ul></div></fieldset>";
+  exit;
+
+}
+
+/**
+ * Build arrays for the x- & y-axis of the table.
+ *
+ * (by combining all terms with each other).
+ *
+ * @param array $form
+ *   Form
+ *
+ * @param array $form_state
+ *   State of Form
+ */
+function _taxonomy_pivot_build_axis($form, &$form_state) {
+  /* Build table
+   *
+   *                     [Dim1Val1][Dim1Val1][Dim1Val2][Dim1Val2]
+   *                     [Dim2Val1][Dim2Val2][Dim2Val1][Dim2Val2]
+   * [Dim3Val1][Dim4Val1]
+   * [Dim3Val1][Dim4Val2]
+   * [Dim3Val2][Dim4Val1]
+   * [Dim3Val2][Dim4Val2]
+   *
+   */
+
+  // x-axis (array).
+  $x_axis_voc = $form_state['values']['x-axis'];
+
+  // y-axis (array).
+  $y_axis_voc = $form_state['values']['y-axis'];
+
+  // Store for term names.
+  $term_names = array();
+
+  // Combine x-axis with each other.
+  // Just use the uppermost level of each selected dimension.
+  $x_axis = array();
+  foreach ($x_axis_voc as $vid) {
+    // Ignore vid = 0: Does not exist and is placeholder for "none"
+    if ($vid == 0) {
+      break;
+    }
+
+    $x_axis_temp = array();
+
+    // Select terms for 1 level from the top one of $vid.
+    $terms = taxonomy_get_tree($vid, 0, 1);
+    foreach ($terms as $term) {
+      if (!empty($x_axis)) {
+        foreach ($x_axis as $term2) {
+          // Combine each term with the whole existing array
+          // (containing terms of the other vocs).
+          $x_axis_temp[] = array_merge(array($term->tid), $term2);
+        }
+      }
+      else {
+        // Do not combine on first run.
+        $x_axis_temp[] = array($term->tid);
+      }
+      $term_names[$term->tid] = $term->name;
+    }
+    $x_axis = $x_axis_temp;
+  }
+
+  // Combine y-axis with each other.
+  // Just use the uppermost level of each selected dimension.
+  $y_axis = array();
+  foreach ($y_axis_voc as $vid) {
+    // Ignore vid = 0: Does not exist and is placeholder for "none"
+    if ($vid == 0) {
+      break;
+    }
+
+    $y_axis_temp = array();
+
+    // Select terms for 1 level from the top one of $vid.
+    $terms = taxonomy_get_tree($vid, 0, 1);
+    foreach ($terms as $term) {
+      if (!empty($y_axis)) {
+        foreach ($y_axis as $term2) {
+          $y_axis_temp[] = array_merge(array($term->tid), $term2);
+        }
+      }
+      else {
+        $y_axis_temp[] = array($term->tid);
+      }
+      $term_names[$term->tid] = $term->name;
+    }
+    $y_axis = $y_axis_temp;
+  }
+
+  // Fill both axis with at least one term
+  // Add placeholder for values if no vocabulary is selected
+  // Placeholder is the non-existing tid = 0
+  if (empty($x_axis)) {
+    $x_axis[] = array(0);
+  }
+  if (empty($y_axis)) {
+    $y_axis[] = array(0);
+  }
+  $term_names[0] = 'Measures';
+
+  // Prepare filters.
+  $filters = array();
+  if (isset($form_state['values']['filters']['filter-fields'])) {
+    $filter_values = $form_state['values']['filters']['filter-fields'];
+    $filter_vocs = $form_state['values']['filters']['filter-fields-hidden'];
+  }
+  else {
+    $filter_values = array();
+    $filter_vocs = array();
+  }
+
+  // Bring the filters in the same form like the axis.
+  for ($i = 0; $i < count($filter_vocs); $i++) {
+    $values = array();
+    foreach ($filter_values[$i] as $value) {
+      if ($value != 0) {
+        $values[] = $value;
+      }
+    }
+
+    // Just add the filter if a term was selected
+    // (otherwise the sql query will fail).
+    if (count($values) > 0) {
+      $filters[] = $values;
+    }
+  }
+
+  // Use the form_state for storing the processed data.
+  $form_state["my-data"] = array(
+    "x_axis" => $x_axis,
+    "y_axis" => $y_axis,
+    "term_names" => $term_names,
+    "filters" => $filters,
+  );
+}
+
+
+/**
+ * Return the number of elements for one cell of the pivot table.
+ *
+ * Therefore creates sql query from the given parameters
+ *
+ * Examples for resulting sql queries:
+ *
+ * Simple case with two vocabularies (x and y) and no childterms:
+ *   select count(distinct taxonomy_index.nid) as count
+ *   from
+ *     {taxonomy_index} taxonomy_index, {taxonomy_index} taxonomy_index1,
+ *     {taxonomy_index} taxonomy_index2
+ *   WHERE
+ *     taxonomy_index.nid = taxonomy_index1.nid AND
+ *     ( taxonomy_index1.tid = 45 ) AND
+ *     taxonomy_index.nid = taxonomy_index2.nid AND
+ *     ( taxonomy_index2.tid = 56 )
+ *
+ * Case with three vocabularies and childterms:
+ *  select count(distinct taxonomy_index.nid) as count
+ *  from {taxonomy_index} taxonomy_index, {taxonomy_index} taxonomy_index1,
+ *       {taxonomy_index} taxonomy_index2, {taxonomy_index} taxonomy_index3
+ *  WHERE
+ *    taxonomy_index.nid = taxonomy_index1.nid AND
+ *    ( taxonomy_index1.tid = 56 ) AND
+ *    taxonomy_index.nid = taxonomy_index2.nid AND
+ *    ( taxonomy_index2.tid = 74 OR  taxonomy_index2.tid = 75 OR
+ *      taxonomy_index2.tid = 79 OR  taxonomy_index2.tid = 76 OR
+ *      taxonomy_index2.tid = 77 OR  taxonomy_index2.tid = 78 ) AND
+ *    taxonomy_index.nid = taxonomy_index3.nid AND
+ *    ( taxonomy_index3.tid = 85 )
+ *
+ * @param array $x_tids
+ *   Terms from x-axis
+ *
+ * @param array $y_tids
+ *   Terms from y-axis
+ *
+ * @param array $filter_tids
+ *   Term to filter (have also to be connected to the node)
+ *   array(vid => array(tid, ...), ...)
+ *
+ * @param array $relationship
+ *   Relationship of nodes to consider //FIXME not yet implemented
+ */
+function _taxonomy_pivot_cell_calc($x_tids, $y_tids, $filter_tids = NULL, $relationship = NULL) {
+  // Remove placeholder tid = 0 for empty axis.
+  $x_tids = _taxonomy_pivot_remove_tid_placeholder($x_tids);
+  $y_tids = _taxonomy_pivot_remove_tid_placeholder($y_tids);
+
+  // Retrieve all child terms for x-terms and y-terms.
+  $x_tids_all = _taxonomy_pivot_get_childterms($x_tids);
+  $y_tids_all = _taxonomy_pivot_get_childterms($y_tids);
+
+  $result = _taxonomy_pivot_build_query_join($x_tids_all, $y_tids_all, $filter_tids);
+
+  foreach ($result as $row) {
+    // Return result of query.
+    return $row->count;
+  }
+}
+
+/**
+ * Build query for specific tids.
+ *
+ * Join of tables is used in the query.
+ *
+ * @param array $x_tids_all
+ *   2-Dim array of Tids (1st level: voc, 2nd terms from voc)
+ *
+ * @param array $y_tids_all
+ *   2-Dim array of Tids (1st level: voc, 2nd terms from voc)
+ *
+ * @param array $filter_tids
+ *   2-Dim array of Tids (1st level: voc, 2nd terms from voc)
+ *
+ * @param bool $count
+ *   If the results should be counted or returned. True = count
+ */
+function _taxonomy_pivot_build_query_join($x_tids_all, $y_tids_all, $filter_tids, $count = TRUE) {
+  global $language;
+
+  // Pepare query for detemining the number of nodes.
+  if ($count) {
+    $query = "select count(distinct taxonomy_index.nid) as count from {taxonomy_index} taxonomy_index";
+  }
+  else {
+    $query = "select distinct taxonomy_index.nid as nid from {taxonomy_index} taxonomy_index";
+  }
+  // Create unique alias for each occurence of the database table (for joins).
+  $table_counter = 1;
+  // FROM part of the query.
+  $query_tables = "";
+  // WHERE part of the query.
+  $query_where = "";
+
+  $query_parameters = array();
+  $query_parameter_count = 0;
+
+  // Filter for each vocabulary term and all its childterms.
+  // (no distinction between x and y needed -> just for presentation purposes).
+  foreach (array_merge($x_tids_all, $y_tids_all, $filter_tids) as $x_tid_all) {
+    // Unique identifier for each table in the query (for joins).
+    $table_name = "taxonomy_index" . $table_counter;
+    // Add one table for each vocabulary.
+    $query_tables .= ", {taxonomy_index} " . $table_name;
+
+    if (!empty($query_where)) {
+      // Each vocabulary has to be in the query, therefore connect with AND.
+      $query_where .= " AND ";
+    }
+    // Join over nid.
+    $query_where .= " taxonomy_index.nid = " . $table_name . ".nid AND (";
+
+    // Helper var for finding the first elem.
+    $tmp = NULL;
+    foreach ($x_tid_all as $tid) {
+      if (!empty($tmp)) {
+        $query_where .= " OR ";
+      }
+      $tmp = TRUE;
+
+      $query_parameter_count++;
+      $query_parameters[':tid' . $query_parameter_count] = $tid;
+
+      // From the childterms of the voc only one has to apply.
+      $query_where .= " " . $table_name . ".tid = :tid" . $query_parameter_count;
+    }
+    $query_where .= " )";
+    $table_counter++;
+  }
+
+  // Check if node exists (& is in correct language).
+  if (!empty($query_where)) {
+    $query_where .= " AND ";
+  }
+  $query_parameters[':language'] = $language->language;
+  $query_where .= " taxonomy_index.nid IN (SELECT nid FROM {node} WHERE language = :language OR language = 'und')";
+
+  // Build full query.
+  $query .= $query_tables . " WHERE " . $query_where;
+
+  // TODO Change to dynamic query!
+  return db_query($query, $query_parameters);
+}
+
+/**
+ * Get all childterms for an array of terms from different vocs.
+ *
+ * @param array $tids
+ *   array of term ids
+ */
+function _taxonomy_pivot_get_childterms($tids) {
+  $tids_all = array();
+  foreach ($tids as $tid) {
+    $tids_all[$tid][] = $tid;
+
+    // FIXME Needed for retrieval of vid. Could also be passed from
+    // taxonomy_pivot_table_callback (could gain performance).
+    $term = taxonomy_term_load($tid);
+
+    // FIXME Cache for better performance! Is used serveral times!
+    $childterms = taxonomy_get_tree($term->vid, $tid);
+    foreach ($childterms as $childterm) {
+      $tids_all[$tid][] = $childterm->tid;
+    }
+  }
+  return $tids_all;
+}
+
+/**
+ * Prepare data for excel export.
+ *
+ * Build excel file using phpexcel and transfer the file to the client.
+ *
+ * @param array $x_axis
+ *   Terms for x-axis
+ *
+ * @param array $y_axis
+ *   Terms for y-axis
+ *
+ * @param array $term_names
+ *   array of term names
+ *
+ * @param array $filters
+ * 	  Term for filters
+ */
+function _taxonomy_pivot_build_excel($x_axis, $y_axis, $term_names, $filters) {
+  // This method cannot be executed without the phpexcel module.
+  if (!module_exists('phpexcel')) {
+    return FALSE;
+  }
+
+  module_load_include('inc', 'phpexcel', 'phpexcel');
+
+  $data = array();
+  $headers = array();
+
+  // Store the file in sites/default/files.
+  $path = file_directory_temp() . '/export.xls';
+
+  $options = array('format' => 'xls');
+
+  // Insert data.
+  // Start with header rows.
+  // Skip columns already full.
+  $column_skip = count($y_axis[0]);
+
+  for ($i = 0; $i < count($x_axis[0]); $i++) {
+    for ($j = 0; $j < count($y_axis[$i]); $j++) {
+      // Blank fields for side columns.
+      $data[$i][$j] = "";
+    }
+    for ($k = 0; $k < count($x_axis); $k++) {
+      $data[$i][$column_skip + $k] = t($term_names[$x_axis[$k][$i]]);
+    }
+  }
+
+  // Skip rows already full.
+  $row_skip = count($x_axis[0]);
+
+  // Add data rows.
+  for ($i = 0; $i < count($y_axis); $i++) {
+    for ($j = 0; $j < count($y_axis[$i]); $j++) {
+      $data[$i + $row_skip][$j] = t($term_names[$y_axis[$i][$j]]);
+    }
+
+    for ($j = 0; $j < count($x_axis); $j++) {
+      $data[$i + $row_skip][$j + $column_skip] = _taxonomy_pivot_cell_calc($x_axis[$j], $y_axis[$i], $filters);
+    }
+  }
+
+  // Headers.
+  for ($k = 0; $k < count($x_axis) + $column_skip; $k++) {
+    // Just add dummy headers.
+    $headers[] = " ";
+  }
+
+  phpexcel_export($headers, $data, $path, $options);
+
+  $path = 'temporary://export.xls';
+  file_transfer($path, array(
+    'Content-Type' => 'application/vnd.ms-excel',
+    'Content-Disposition' => 'attachment; filename="' . 'taxonomy-pivot.xls' . '"',
+    'Content-Length' => filesize($path),
+    'Cache-Control' => 'max-age=0'));
+}
+
+/**
+ * Helper method for returning an array of all terms of a vocabulary.
+ *
+ * without hierachies in the form:
+ * array(tid => t('term_name'), ...)
+ *
+ * @param Integer $vid
+ *   Id of vocabulary
+ */
+function _taxonomy_pivot_voc_get_terms($vid) {
+  $terms = taxonomy_get_tree($vid);
+  $term_names = array();
+  foreach ($terms as $term) {
+    $term_names[$term->tid] = t($term->name);
+  }
+  return $term_names;
+}
+
+/**
+ * Generate the table output.
+ *
+ * using theme(table)
+ *
+ * @param array $x_axis
+ *   array with combinations of all terms from the selected vocabularies
+ *   (@see _taxonomy_pivot_build_axis)
+ * @param array $y_axis
+ *   array with combinations of all terms from the selected vocabularies
+ *   (@see _taxonomy_pivot_build_axis)
+ * @param array $term_names
+ *   array of term names for the vocabularies
+ * @param array $filters
+ *   array selected terms for filtering (@see _taxonomy_pivot_build_axis)
+ */
+function _taxonomy_pivot_table_generate($x_axis, $y_axis, $term_names, $filters) {
+  $rows = array();
+  // For every vocabulary.
+  for ($i = 0; $i < count($x_axis[0]); $i++) {
+    $row = array();
+
+    // Fill with blank cells for every voc in y-axis.
+    for ($j = 0; $j < count($y_axis[$i]); $j++) {
+      $row[] = array('data' => '&nbsp;', 'header' => 'header');
+    }
+
+    // Print column headers (x-axis).
+    $j = 0;
+    $last = "start";
+    // Iterate each vocabulary.
+    // Print term if it has not been printed before.
+    // Do colspan instead for dupicate columns.
+    // For every term in vocabulary.
+    for ($k = 0; $k < count($x_axis); $k++) {
+      if ($last !== $x_axis[$k][$i]) {
+        if ($last != "start") {
+          $row[] = array(
+            'data' => t($term_names[$last]),
+            'header' => 'header',
+            'colspan' => $j,
+          );
+          $last = $x_axis[$k][$i];
+          $j = 1;
+        }
+        else {
+          $last = $x_axis[$k][$i];
+          $j++;
+        }
+      }
+      else {
+        $j++;
+      }
+
+      if ($k == (count($x_axis) - 1)) {
+        // Print last term.
+        $row[] = array(
+          'data' => t($term_names[$last]),
+          'header' => 'header',
+          'colspan' => $j,
+        );
+      }
+    }
+    $rows[] = $row;
+  }
+
+  // Initialize rowspan_index.
+  $rowspan_index = array();
+
+  // Iterate all rows (combinations of all terms).
+  for ($i = 0; $i < count($y_axis); $i++) {
+    $row = array();
+    // Iterate title-columns of this row.
+    // (the titles left of the table).
+    for ($j = 0; $j < count($y_axis[$i]); $j++) {
+      // Determine if cell has to be printed.
+      if (!isset($rowspan_index[$j]) || $i >= $rowspan_index[$j]) {
+        // Determine distance to next entry.
+        for ($k = $i; $k < count($y_axis); $k++) {
+          if ($y_axis[$i][$j] != $y_axis[$k][$j]) {
+            $rowspan_index[$j] = $k;
+            break;
+          }
+          if ($k == (count($y_axis) - 1)) {
+            $rowspan_index[$j] = $k + 1;
+          }
+        }
+        $row[] = array(
+          'data' => t($term_names[$y_axis[$i][$j]]),
+          'header' => 'header',
+          'rowspan' => ($k - $i),
+        );
+      }
+    }
+
+    // Build remaining cells of the table.
+    // The cells containing the values.
+    for ($j = 0; $j < count($x_axis); $j++) {
+      $value = _taxonomy_pivot_cell_calc($x_axis[$j], $y_axis[$i], $filters);
+      if ($value > 0) {
+        $class = array('pivotValueCell', 'pivotValueCellFull');
+      }
+      else {
+        $class = array('pivotValueCell');
+      }
+
+      $cell_value = "<span class='node-count'>" . $value . "</span>
+        <input type='hidden' class='hidden_x_axis' value='" . json_encode($x_axis[$j], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) . "' />
+        <input type='hidden' class='hidden_y_axis' value='" . json_encode($y_axis[$i], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) . "' />
+        <input type='hidden' class='hidden_filters' value='" . json_encode($filters, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) . "' />";
+      $row[] = array(
+        'data' => $cell_value,
+        'class' => $class,
+      );
+    }
+    $rows[] = $row;
+  }
+
+  return theme('table', array('rows' => $rows));
+}
+
+/**
+ * Remove the placeholder tid=0 from the tid-array.
+ *
+ * @param array $tids
+ *   The TermIDs of the current axis
+ */
+function _taxonomy_pivot_remove_tid_placeholder($tids) {
+  if (($key = array_search('0', $tids)) !== FALSE) {
+    unset($tids[$key]);
+    $tids = array_values($tids);
+  }
+  return $tids;
+}
+
+/**
+ * Generate chart based on form data.
+ *
+ * Examples for chart api:
+ * https://code.google.com/p/drupal-chart-api/wiki/Examples.
+ *
+ * @param array $form
+ *   The form definition
+ * @param array $form_state
+ *   The form values
+ */
+function _taxonomy_pivot_chart_build($form, &$form_state) {
+  // Configuration.
+  $chart_width = 740;
+  $chart_height = 300;
+
+  // This functionality needs the chart module.
+  if (!module_exists('chart')) {
+    return FALSE;
+  }
+
+  // First the axis are combined.
+  _taxonomy_pivot_build_axis($form, $form_state);
+
+  // Retrieve values from form_state.
+  $x_axis = $form_state['my-data']['x_axis'];
+  $y_axis = $form_state['my-data']['y_axis'];
+  $term_names = $form_state['my-data']['term_names'];
+  $filters = $form_state['my-data']['filters'];
+
+  // General settings for the chart.
+  $chart = array(
+    '#chart_id' => 'test_chart',
+    '#title' => t('Bar Chart'),
+    '#type' => CHART_TYPE_BAR_V_GROUPED,
+    '#size' => chart_size($chart_width, $chart_height),
+    '#adjust_resolution' => TRUE,
+    '#grid_lines' => chart_grid_lines(20, 20, 1, 5),
+    '#bar_size' => _taxonomy_pivot_chart_bar_size($chart_width, $x_axis, $y_axis),
+  );
+
+  // Max value for setting the range labels of the chart.
+  $max_value = 0;
+
+  foreach ($y_axis as $y_tids) {
+    $x_values = array();
+    foreach ($x_axis as $x_tids) {
+      $value = _taxonomy_pivot_cell_calc($x_tids, $y_tids, $filters);
+      if ($value > $max_value) {
+        $max_value = $value;
+      }
+      $x_values[] = $value;
+    }
+    $chart['#data'][] = $x_values;
+    $chart['#data_colors'][] = chart_unique_color(_taxonomy_pivot_chart_build_label($y_tids, $term_names));
+    $chart['#legends'][] = _taxonomy_pivot_chart_build_label($y_tids, $term_names, 11);
+  }
+
+  // Labels for x-axis terms.
+  foreach ($x_axis as $x_tids) {
+    $chart['#mixed_axis_labels'][CHART_AXIS_X_BOTTOM][1][] = chart_mixed_axis_label(_taxonomy_pivot_chart_build_label($x_tids, $term_names, 11));
+  }
+
+  // Label for x-axis vocabulary.
+  $x_vocs = $form_state['values']['x-axis'];;
+  $label_count = 2;
+  foreach ($x_vocs as $vid) {
+    $voc = taxonomy_vocabulary_load($vid);
+    $chart['#mixed_axis_labels'][CHART_AXIS_X_BOTTOM][$label_count][] = chart_mixed_axis_label($voc->name, 50);
+    $label_count++;
+  }
+
+  // Add a range label to the y-axis
+  $chart['#mixed_axis_labels'][CHART_AXIS_Y_LEFT][0][] = chart_mixed_axis_range_label(0, $max_value);
+
+  return theme('chart', array('chart' => $chart));
+}
+
+/**
+ * Build a label for charts.
+ *
+ * that combines all used terms for current value
+ *
+ * @param array $tids
+ *   The TermIDs the label is created for
+ * @param array $term_names
+ *   array of term names used for labeling
+ *   Structure: array[tid] = name
+ * @param Integer $trim_label
+ *   Trim the length of the label to the given length
+ */
+function _taxonomy_pivot_chart_build_label($tids, $term_names = NULL, $trim_label = NULL) {
+  if ($term_names != NULL) {
+    $label = "";
+    foreach ($tids as $tid) {
+      if (isset($term_names[$tid])) {
+        if ($label != "") {
+          $label .= " - ";
+        }
+        $label .= $term_names[$tid];
+      }
+    }
+  }
+  else {
+    // FIXME retrieve term_names from db.
+  }
+  if (is_numeric($trim_label) && strlen($label) > ($trim_label + 3)) {
+    $label = substr($label, 0, $trim_label) . "...";
+  }
+
+  return $label;
+}
+
+/**
+ * Calculate width of bars and space to optimally fill the width of the chart.
+ *
+ * @param array $width
+ *   The desired width of the chart
+ *
+ * @param array $x_axis
+ *   Terms for x-axis
+ *
+ * @param array $y_axis
+ *   Terms for y-axis
+ */
+function _taxonomy_pivot_chart_bar_size($width, $x_axis, $y_axis) {
+  // Space for the table legend.
+  $width = $width - 150;
+
+  // For each combination on x_axis combined
+  // with each on y_axis a bar is created.
+  // e.g. x-axis: 1 voc with 5 terms, y-axis: 1 voc with 2 terms --> 20 bars.
+  $x_elements = count($x_axis) * count($y_axis);
+
+  // Share of bar vs. space, e.g. 80:20
+  $bar = 4;
+  $space = 1;
+
+  $elem_width = $width / $x_elements;
+  $bar_width = floor($elem_width / ($bar + $space) * $bar);
+  $bar_space = floor($elem_width / ($bar + $space) * $space);
+
+  if ($bar_width < 1) {
+    $bar_width = 1;
+  }
+  if ($bar_space < 1) {
+    $bar_space = 1;
+  }
+
+  return array(
+    '#size'    => $bar_width,
+    '#spacing' => $bar_space,
+  );
+}

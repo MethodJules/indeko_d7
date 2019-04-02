@@ -1,0 +1,109 @@
+/* =============================================================================
+ *   Morphological box base page layout
+ *   (remove all other page elements, increase horizontal space for morphological box)
+ * ========================================================================== */
+#page {
+    max-width: unset;
+}
+
+#main-content {
+    margin-left: 2rem;
+    margin-right: 2rem;
+}
+
+#columns {
+    margin-top: 3em;
+}
+
+.sidebar {
+    display: none;
+}
+
+.content-inner {
+    margin-left: unset !important;
+}
+
+.morphbox-table {
+    margin-top: -30px;
+}
+
+#page-title {
+    margin-bottom: 0;
+}
+
+
+/* =============================================================================
+ *   Morphological box table styling
+ * ========================================================================== */
+.highlight {
+    background-color: lightgreen;
+}
+
+.morphbox-table {
+    float: right;
+    width: calc(100% - 510px);
+    overflow-x: scroll;
+}
+
+th {
+    cursor: pointer;
+}
+
+tr {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/*
+ * Visualize term hierarchy
+ */
+.term-depth-1 {
+    padding-left: .5em;
+}
+
+.term-depth-1::before {
+    content: '> ';
+    white-space: nowrap;
+}
+
+.term-depth-2 {
+    padding-left: 1em;
+}
+
+.term-depth-2::before {
+    content: '>> ';
+    white-space: nowrap;
+}
+
+/* =============================================================================
+ *   Morphological box edit form styling
+ * ========================================================================== */
+.form-item-vocabulary-name,
+#js-ajax-elements-wrapper,
+#edit-actions {
+    float: left;
+    width: 500px;
+    clear: left;
+}
+
+.field-edit-voc {
+    width: auto;
+}
+
+.button-term-remove {
+    margin: 0;
+    margin-bottom: 0.2rem;
+    padding: .2rem .7rem;
+}
+
+.terms-container-title .form-type-item {
+    margin-bottom: 0;
+}
+
+#edit-terms-container .container-inline {
+    white-space: nowrap;
+    overflow: hidden;
+}

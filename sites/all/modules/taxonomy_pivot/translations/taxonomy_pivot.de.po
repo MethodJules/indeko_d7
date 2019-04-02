@@ -1,0 +1,100 @@
+# German translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  taxonomy_pivot.module: n/a
+#  taxonomy_pivot.info: n/a
+#  taxonomy_pivot.install: n/a
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2013-03-07 09:35+0100\n"
+"PO-Revision-Date: 2013-03-07 09:42+0100\n"
+"Last-Translator: Tobias Heide <heide@ercis.de>\n"
+"Language-Team: German <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: taxonomy_pivot.module:53
+msgid "Access Taxnonomy Pivot"
+msgstr "Zugriff auf Taxnonomy Pivot"
+
+#: taxonomy_pivot.module:54
+msgid "Use all functions of Taxonomy Pivot."
+msgstr "Alle Funktionen von Taxonomy Pivot verwenden."
+
+#: taxonomy_pivot.module:100
+msgid "none"
+msgstr "keine"
+
+#: taxonomy_pivot.module:121
+msgid "Configuration"
+msgstr "Konfiguration"
+
+#: taxonomy_pivot.module:125
+msgid "X-Axis"
+msgstr "X-Achse"
+
+#: taxonomy_pivot.module:132
+msgid "Y-Axis"
+msgstr "Y-Achse"
+
+#: taxonomy_pivot.module:140
+msgid "Filters"
+msgstr "Filterkriterien"
+
+#: taxonomy_pivot.module:191
+msgid "All Filters"
+msgstr "Alle Filter"
+
+#: taxonomy_pivot.module:198
+msgid "Add"
+msgstr "Hinzufügen"
+
+#: taxonomy_pivot.module:210
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+#: taxonomy_pivot.module:222
+msgid "Process"
+msgstr "Ausführen"
+
+#: taxonomy_pivot.module:234
+msgid "Excel"
+msgstr "Excel"
+
+#: taxonomy_pivot.module:246;301
+msgid "Chart"
+msgstr "Diagramm"
+
+#: taxonomy_pivot.module:273
+msgid "Taxonomy Pivot Table"
+msgstr "Taxonomy Pivot Tabelle"
+
+#: taxonomy_pivot.module:493
+msgid "Contents for current selection"
+msgstr "Inhalte der aktuellen Auswahl"
+
+#: taxonomy_pivot.module:1077
+msgid "Bar Chart"
+msgstr "Balken Diagramm"
+
+#: taxonomy_pivot.module:15 taxonomy_pivot.info:0
+msgid "Taxonomy Pivot"
+msgstr "Taxonomy Pivot"
+
+#: (duplicate) taxonomy_pivot.install:12
+msgid ""
+"Taxonomy Pivot was installed successfully! For the full experience you "
+"should install the optional modules !phpexcel and !charts."
+msgstr ""
+"Taxonomy Pivot wurde erfolgreich installiert! Für den vollen Funktionsumfang "
+"sollten die optionalen Module !phpexcel und !charts installiert werden."
+
+#: taxonomy_pivot.info:0
+msgid "Pivot table for showing taxonomy classification of nodes"
+msgstr ""
+"Pivot-Tabelle, die die Klassifizierung der Nodes mit Hilfe der Taxonomie "
+"anzeigt."

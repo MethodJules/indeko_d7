@@ -1,0 +1,35 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: hofer
+ * Date: 10.07.2017
+ * Time: 09:31
+ */
+
+
+/**
+ * Implements hook_menu().
+ */
+function bi_visual_menu()
+{
+  $items['d3/bi_visual/%'] = array(
+    'title' => '',
+    'description' => 'Visualization of aggregated drill down layers (taxonomy vocabularies and terms)',
+    'page callback' => 'bi_visual',
+    'access callback' => TRUE,
+    'page arguments' => array(2),
+    'file' => 'bi_visual.pages.inc',
+  );
+
+  $items['d3/bi/%'] = array(
+    'title' => '',
+    'description' => 'Visualization of the lowest drill down layer (nodes)',
+    'page callback' => 'bi_drilldown',
+    'access callback' => TRUE,
+    'page arguments' => array(2),
+    'file' => 'bi_visual.pages.inc',
+  );
+
+  return $items;
+}
+

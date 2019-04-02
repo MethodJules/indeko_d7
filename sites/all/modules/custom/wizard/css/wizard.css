@@ -1,0 +1,49 @@
+/*
+ * @file
+ * wizard.css
+ *
+ * Styles you add here will load only for content type "hypotesis".
+ * If styles are integrated into a global stylesheet (some) styles
+ * should be restricted with further classes e.g. .node-hypothesis
+ * to affect only hypothesis nodes.
+ *
+ */
+
+/* =============================================================================
+ *   Hypothesis fieldsets
+ * ========================================================================== */
+fieldset.hypothesis {
+    cursor: pointer;
+}
+
+fieldset.hypothesis .tooltip {
+    display: none;
+}
+
+.tooltip .icon {
+    padding-left: 16px;
+}
+
+.fieldsets {
+    padding-top: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
+    border-style: solid;
+    border-color: #52B166;
+}
+
+.fieldset-legend {
+    font-weight: bold;
+}
+
+fieldset {
+    margin-bottom: 1em;
+}
+
+
+/* =============================================================================
+ *   Hypothesis search result block initially hidden
+ * ========================================================================== */
+#block-views-searchresults-block {
+    display: none;
+}
